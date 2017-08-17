@@ -5,13 +5,13 @@
 // The advantage of this is that the implementation of the plugin is language-agnostic.
 //
 // Tested only on 64bit Linux.
-package plugin
+package gplugin
 
 import (
 	"errors"
 	"reflect"
 
-	"github.com/tiborvass/dl"
+	"github.com/monotone/dl"
 )
 
 // Plugin is a struct that must be embedded in a user-defined Plugin struct.
