@@ -8,6 +8,11 @@ The advantage of this is that the implementation of the plugin is language-agnos
 
 Tested only on 64bit Linux.
 
+By monotone:
+    Tested on darwin/amd64.
+
+    **change the packkage name form `go-plugin` to `gplugin`, just for not be same with stand package "plugin" from Go 1.8**
+
 ## Installation
 
 Go 1.5+ is needed
