@@ -77,17 +77,28 @@ func OpenWithCheck(plugin interface{}, path string) error {
 	v := reflect.ValueOf(plugin)
 	t := v.Type()
 	if t.Kind() != reflect.Ptr {
-		return errors.New("Open expects a plugin to be a pointer to a struct")
+		return errors.New("OpenWithCheck expects a plugin to be a pointer to a struct")
 	}
 	v = v.Elem()
 	t = v.Type()
 	if t.Kind() != reflect.Struct {
-		return errors.New("Open expects a plugin to be a pointer to a struct")
+		return errors.New("OpenWithCheck expects a plugin to be a pointer to a struct")
 	}
+
+	// 检测结构体内部有没有合法的plugin成员
+	pv := v.FieldByName(_plugin)
+	if !pv.IsValid() {
+		return errors.New("OpenWithCheck expects a plugin must have gplugin.Plugin field")
+	} else if pv.Type().Kind() != reflect.Struct {
+		return errors.New("OpenWithCheck expects a plugin have the gplugin.Plugin field must be strurt type")
+	}
+
 	lib, err := dl.Open(path, 0)
 	if err != nil {
 		return err
 	}
+
+	// 设置好各字段的值
 	for i := 0; i < v.NumField(); i++ {
 		tf := t.Field(i)
 		if tf.Name != _plugin {
