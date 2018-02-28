@@ -68,6 +68,40 @@ func Open(plugin interface{}, path string) error {
 	return nil
 }
 
+// OpenWithoutSetEmptyFn 是 Open 函数的不填充找不到的函数指针版本
+func OpenWithoutSetEmptyFn(plugin interface{}, path string) error {
+	v := reflect.ValueOf(plugin)
+	t := v.Type()
+	if t.Kind() != reflect.Ptr {
+		return errors.New("Open expects a plugin to be a pointer to a struct")
+	}
+	v = v.Elem()
+	t = v.Type()
+	if t.Kind() != reflect.Struct {
+		return errors.New("Open expects a plugin to be a pointer to a struct")
+	}
+	lib, err := dl.Open(path, 0)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < v.NumField(); i++ {
+		tf := t.Field(i)
+		if tf.Name != _plugin {
+			sym := v.Field(i).Interface()
+			if err := lib.Sym(tf.Name, &sym); err != nil && tf.Type.Kind() == reflect.Func {
+				// fn := reflect.MakeFunc(tf.Type, nopFn)
+				// v.Field(i).Set(fn)
+			} else {
+				v.Field(i).Set(reflect.ValueOf(sym))
+			}
+		} else {
+			p := Plugin{lib}
+			v.Field(i).Set(reflect.ValueOf(p))
+		}
+	}
+	return nil
+}
+
 // OpenWithCheck retrieves the symbols defined in plugin, from the shared library at path.
 // path should omit the file extension (e.g. "plugin" instead of "plugin.so").
 // plugin should be a pointer to a struct embedding the Plugin struct.
